@@ -7,8 +7,8 @@ spring:
   batch:
     jdbc:
       initialize-schema: always
-    job:
-      names: conditionalStepLogicJob  # 서비스를 구동하면 전체 Job 실행 -> 특정 Job 만 실행시키도록 설정
+#    job:
+#      names: conditionalStepLogicJob  # 서비스를 구동하면 전체 Job 실행 -> 특정 Job 만 실행시키도록 설정
   quartz:
     properties:
       threadPool:
