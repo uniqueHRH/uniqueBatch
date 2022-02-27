@@ -1,3 +1,5 @@
+server:
+  port: 8013
 spring:
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver
@@ -6,10 +8,17 @@ spring:
     password: temp1234
   batch:
     jdbc:
-      initialize-schema: always
+      initialize-schema: ALWAYS
 #    job:
 #      names: conditionalStepLogicJob  # 서비스를 구동하면 전체 Job 실행 -> 특정 Job 만 실행시키도록 설정
   quartz:
     properties:
       threadPool:
         threadCount: 2
+org:
+  springframework:
+    boot:
+      loggin:
+        LogLevel: DEBUG
+#logging:
+#  level: DEBUG

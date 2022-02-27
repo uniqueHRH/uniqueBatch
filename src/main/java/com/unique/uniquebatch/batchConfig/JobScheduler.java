@@ -1,12 +1,17 @@
 package com.unique.uniquebatch.batchConfig;
 
 import com.unique.uniquebatch.batchJob.TradeJob;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.JobInstance;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.JobParametersInvalidException;
 import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
+import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
+import org.springframework.batch.core.repository.JobRestartException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -15,13 +20,14 @@ import java.util.Calendar;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class JobScheduler {
-    JobLauncher     jobLauncher;
-    TradeJob        tradeJob;
+    @Autowired
+    private JobLauncher     jobLauncher;
+    @Autowired
+    private TradeJob        tradeJob;
 
     @Scheduled(cron = "0 0 13 * * *")
-    public void insertTradeScheduler() {
+    public void insertTradeScheduler() throws JobExecutionAlreadyRunningException, JobRestartException {
         log.info("[ JobScheduler : insertTradeScheduler ] START");
 
         SimpleDateFormat    format      = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -34,12 +40,25 @@ public class JobScheduler {
         log.debug("format_time === " + format_time);
         log.debug("intUnixTime === " + intUnixTime);
 
-        JobParametersBuilder    jobParametersBuilder    = new JobParametersBuilder();
+        JobParametersBuilder jobParametersBuilder    = new JobParametersBuilder();
         jobParametersBuilder.addString("date", format_time + intUnixTime + "_trade");
-        JobParameters           jobParameters           = jobParametersBuilder.toJobParameters();
-        JobExecution            jobExecution            = null;
+        JobParameters jobParameter           = jobParametersBuilder.toJobParameters();
+        JobExecution jobExecution            = null;
 
-        jobExecution    = jobLauncher.run(tradeJob.);
+        try {
+            jobExecution = jobLauncher.run(tradeJob.calcTradeTotalAmtJob(), jobParameter);
+            JobInstance instance = jobExecution.getJobInstance();
+
+            if (jobExecution.getExitStatus().equals("isUnsuccessful")) {
+                log.info("##### job id(parameter) === " + jobExecution.getId() + "("+jobParameter + ") Batch Fail");
+                log.info("##### instanceId ========== " + instance.getInstanceId());
+                log.info("##### jobName ============= " + instance.getJobName());
+            }
+            log.info("jobExecution finished exit cod ##### " + jobExecution.getExitStatus());
+        } catch (JobInstanceAlreadyCompleteException | IllegalStateException | JobParametersInvalidException e) {
+            log.debug("########## " + jobParameter + " BATCH RUN ERROR #########");
+            e.printStackTrace();
+        }
     }
 
 //    @Scheduled(cron = "")
@@ -51,7 +70,6 @@ public class JobScheduler {
 }
 
 /**
- * 1. 주기적으로 유저별 거래내역 추가 : insertTradeList
- * 2. 유저별 총합산액 내역 추가      : insertTradeTotalAmt
- *    일자별 총 합산액  추가        : insertTotalAmtByDay
+ * 유저별 총합산액 내역 추가      : calcTradeTotalAmtJob
+ * 일자별 총 합산액  추가        : insertTotalAmtByDay
  */
