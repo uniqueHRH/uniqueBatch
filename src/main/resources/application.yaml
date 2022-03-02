@@ -15,10 +15,10 @@ spring:
     properties:
       threadPool:
         threadCount: 2
-org:
-  springframework:
-    boot:
-      loggin:
-        LogLevel: DEBUG
+#org:
+#  springframework:
+#    boot:
+#      loggin:
+#        LogLevel: DEBUG
 #logging:
 #  level: DEBUG

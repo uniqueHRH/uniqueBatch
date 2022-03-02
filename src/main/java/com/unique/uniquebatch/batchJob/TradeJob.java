@@ -118,7 +118,7 @@ public class TradeJob {
         JdbcBatchItemWriter<TradeDTO> iw = new JdbcBatchItemWriter<TradeDTO>();
         iw.setItemSqlParameterSourceProvider(new BeanPropertyItemSqlParameterSourceProvider<>());
         iw.setAssertUpdates(false);            // 업데이트할 열이 없을 때 발생하는 Exception 닫기
-        iw.setSql("update trade_list set reflect_yn = 'N' where trade_seq = :trade_seq");
+        iw.setSql("update trade_list set reflect_yn = 'Y' where trade_seq = :trade_seq");
         iw.setDataSource(dataSource);
         iw.afterPropertiesSet();
         return iw;
